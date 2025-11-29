@@ -47,7 +47,35 @@ async def admin_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     buttons = [[InlineKeyboardButton("🔄 Refresh", callback_data="admin_stats")]]
+    buttons = [[InlineKeyboardButton("🔄 Refresh", callback_data="admin_stats")]]
     await safe_edit_message(query, stats_text, add_back_button(buttons))
+
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Command handler for /stats"""
+    if not await check_admin(update): return
+    
+    db = context.bot_data.get('db')
+    folder_count, file_count, total_size, user_count = db.get_stats()
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    
+    stats_text = (
+        f"📊 **Bot Statistics** (Updated: {timestamp}):\n\n"
+        f"📁 Total Folders: **{folder_count}**\n"
+        f"📄 Total Files: **{file_count}**\n"
+        f"👥 Total Users: **{user_count}**\n"
+        f"💾 Total Size: **{format_file_size(total_size)}**\n"
+        f"🗄️ Database: **PostgreSQL (Persistent)**\n"
+        f"🌐 Platform: **{PLATFORM}**"
+    )
+    
+    await update.message.reply_text(stats_text, parse_mode='Markdown')
+
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Command handler for /broadcast"""
+    if not await check_admin(update): return
+    
+    context.user_data["awaiting_broadcast"] = True
+    await update.message.reply_text("📢 Send the message you want to broadcast to all users:")
 
 async def admin_current(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
