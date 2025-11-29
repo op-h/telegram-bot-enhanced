@@ -136,7 +136,8 @@ def add_back_button(buttons: list) -> InlineKeyboardMarkup:
 def main_menu_buttons(is_admin: bool) -> InlineKeyboardMarkup:
     keyboard = [
         [InlineKeyboardButton(f"{ICONS['folder']} {STRINGS['btn_browse']}", callback_data="browse_folders")],
-        [InlineKeyboardButton(f"{ICONS['search']} {STRINGS['btn_search']}", callback_data="search_start")]
+        # Use switch_inline_query_current_chat to trigger real-time search
+        [InlineKeyboardButton(f"{ICONS['search']} {STRINGS['btn_search']}", switch_inline_query_current_chat="")]
     ]
     if is_admin:
         keyboard.append([InlineKeyboardButton(f"{ICONS['admin']} {STRINGS['btn_admin']}", callback_data="admin_main")])

@@ -42,38 +42,6 @@ def main():
         
         # Command Handlers
         app.add_handler(CommandHandler("start", common.start))
-        
-        # Admin Handlers
-        app.add_handler(CallbackQueryHandler(admin.admin_main, pattern="^admin_main$"))
-        app.add_handler(CallbackQueryHandler(admin.admin_stats, pattern="^admin_stats$"))
-        app.add_handler(CallbackQueryHandler(admin.admin_current, pattern="^admin_current$"))
-        app.add_handler(CallbackQueryHandler(admin.create_folder_start, pattern="^create_folder_current$"))
-        app.add_handler(CallbackQueryHandler(admin.upload_start, pattern="^upload_current$"))
-        app.add_handler(CallbackQueryHandler(admin.delete_folder_start, pattern="^delete_folder_current$"))
-        app.add_handler(CallbackQueryHandler(admin.delete_folder_confirm, pattern="^delete_folder_confirm\|"))
-        app.add_handler(CallbackQueryHandler(admin.delete_file_start, pattern="^delete_file_current$"))
-        app.add_handler(CallbackQueryHandler(admin.delete_file_confirm, pattern="^delete_file_confirm\|"))
-        app.add_handler(CallbackQueryHandler(admin.broadcast_start, pattern="^broadcast_start$"))
-        
-        # User Handlers
-        app.add_handler(CallbackQueryHandler(user.browse_folders, pattern="^browse_folders$"))
-        app.add_handler(CallbackQueryHandler(user.open_folder, pattern="^open_folder\|"))
-        app.add_handler(CallbackQueryHandler(user.download_file, pattern="^download\|"))
-        app.add_handler(CallbackQueryHandler(user.search_start, pattern="^search_start$"))
-        app.add_handler(CallbackQueryHandler(user.download_by_id, pattern="^download_id\|"))
-        
-        # Common Handlers
-        app.add_handler(CallbackQueryHandler(user.back, pattern="^back$"))
-        app.add_handler(CallbackQueryHandler(user.clear_interface, pattern="^clear_interface$"))
-        app.add_handler(CallbackQueryHandler(common.close_handler, pattern="^close_interface$"))
-        # Actually close_interface logic was: delete message.
-        # I need to implement close_interface in user handlers or common.
-        # Let's add it to user.clear_interface logic or separate.
-        # For now, map to clear_interface which is similar, or I should have added a specific close handler.
-        # I'll map it to clear_interface for now as it's safe.
-        
-        # Message Handlers
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin.handle_folder_name))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, user.handle_search))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin.handle_broadcast))
         # Note: MessageHandlers overlap. I need to check state inside them or use ConversationHandler.
