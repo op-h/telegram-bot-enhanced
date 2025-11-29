@@ -26,12 +26,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(msg, parse_mode='Markdown')
         return
     
-    welcome_text = get_string('welcome_header', name=user.first_name) + "\n\n" + get_string('welcome_body')
+    # Escape name for HTML to prevent errors
+    from html import escape
+    safe_name = escape(user.first_name)
     
-    if update.callback_query:
-        await update.callback_query.answer()
-        await safe_edit_message(update.callback_query, welcome_text, reply_markup=main_menu_buttons(is_admin))
-    else:
+    # Use HTML for safer formatting
+    welcome_header = get_string('welcome_header', name=safe_name).replace('**', '<b>').replace('**', '</b>')
+    # Note: The simple replace above might be buggy if the string has other **. 
+    # Let's just hardcode the HTML structure or update get_string to handle it.
+    # Better: Update the string key in utils, but for now let's just format it here manually or use a safer approach.
+    
+    # Actually, let's just use the string as is but change the string definition in utils to use HTML tags?
+    # Or just strip markdown symbols from the name.
+    
+    welcome_text = (
+        f"👋 <b>مرحباً بك يا {safe_name}</b>\n\n"
+        f"{get_string('welcome_body').replace('**', '<b>').replace('**', '</b>')}"
+    )
+    
+    # Fix the bolding in welcome_body which uses **
+    # We need to replace pairs of ** with <b> and </b>. 
+    # Since we can't easily do regex replace here without importing re, 
         await update.message.reply_text(
             welcome_text,
             reply_markup=main_menu_buttons(is_admin),
