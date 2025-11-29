@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 # ===== ICONS & FORMATTING =====
 ICONS = {
-    'folder': '📁',
+    'folder': '📂',
     'root': '🏠',
     'back': '🔙',
     'search': '🔍',
@@ -18,8 +18,47 @@ ICONS = {
     'audio': '🎵',
     'archive': '📦',
     'code': '💻',
-    'unknown': '📄'
+    'unknown': '📄',
+    'close': '❌',
+    'clear': '🧹'
 }
+
+# ===== TRANSLATIONS (ARABIC) =====
+STRINGS = {
+    'welcome_header': "👋 **مرحباً بك يا {name}**",
+    'welcome_body': (
+        "🔐 **بوابة الأمن السيبراني**\n"
+        "مكتبتك الشاملة للمحاضرات والمصادر التعليمية.\n\n"
+        "👇 **اختر من القائمة أدناه:**"
+    ),
+    'btn_browse': "تصفح المحاضرات",
+    'btn_search': "بحث في الملفات",
+    'btn_admin': "لوحة التحكم",
+    'btn_close': "إغلاق القائمة",
+    'btn_back': "رجوع",
+    'btn_clear': "تنظيف الواجهة",
+    'root_name': "الرئيسية",
+    'folder_header': "📂 **{name}**",
+    'folder_content': "📊 **المحتويات:** {folders} مجلدات | {files} ملفات",
+    'search_prompt': "🔍 **البحث المتقدم**\n\nفضلاً، أرسل اسم الملف أو الكلمة المفتاحية للبحث عنها...",
+    'search_no_results': "❌ **عذراً، لم يتم العثور على نتائج.**\nحاول البحث بكلمة أخرى.",
+    'search_results': "🔍 **نتائج البحث:** وجدنا {count} ملفات",
+    'file_caption': "{icon} **{filename}**\n\n✅ تفضل ملفك.",
+    'error_db': "❌ **خطأ في النظام**: تعذر الاتصال بقاعدة البيانات.\nيرجى التواصل مع المسؤول.",
+    'interface_cleared': "🧹 **تم تنظيف الواجهة.**\nاستخدم /start للبدء من جديد.",
+    'admin_panel': "⚙️ **لوحة التحكم**",
+    'admin_stats': "📊 الإحصائيات",
+    'admin_broadcast': "📢 إذاعة رسالة",
+    'admin_manage': "إدارة المجلد الحالي",
+    'back_to_root': "العودة للرئيسية"
+}
+
+def get_string(key: str, **kwargs) -> str:
+    """Get translated string with formatting"""
+    text = STRINGS.get(key, key)
+    if kwargs:
+        return text.format(**kwargs)
+    return text
 
 def get_file_icon(filename: str) -> str:
     """Get icon based on file extension"""
@@ -39,10 +78,11 @@ def path_to_string(path_list):
 
 def get_breadcrumbs(path_list):
     """Generate navigation breadcrumbs"""
+    root_name = STRINGS['root_name']
     if not path_list:
-        return f"{ICONS['root']} **Root**"
+        return f"{ICONS['root']} **{root_name}**"
     
-    crumbs = [f"{ICONS['root']} Root"]
+    crumbs = [f"{ICONS['root']} {root_name}"]
     for i, folder in enumerate(path_list):
         if i == len(path_list) - 1:
             # Current folder (bold)
@@ -82,26 +122,33 @@ async def safe_edit_message(query, text, reply_markup=None):
             await query.answer("❌ Error updating interface", show_alert=True)
 
 def add_back_button(buttons: list) -> InlineKeyboardMarkup:
-    buttons.append([InlineKeyboardButton(f"{ICONS['back']} Back", callback_data="back")])
-    buttons.append([InlineKeyboardButton("🧹 Close", callback_data="clear_interface")])
+    # RTL: Back button usually on the right or left? 
+    # In Telegram inline keys, left is first. 
+    # For Arabic, "Back" (Right) -> "Clear" (Left) might feel more natural if we consider flow?
+    # But usually Back is primary navigation.
+    # Let's keep standard layout but translate.
+    buttons.append([
+        InlineKeyboardButton(f"{ICONS['back']} {STRINGS['btn_back']}", callback_data="back"),
+        InlineKeyboardButton(f"{ICONS['clear']} {STRINGS['btn_clear']}", callback_data="clear_interface")
+    ])
     return InlineKeyboardMarkup(buttons)
 
 def main_menu_buttons(is_admin: bool) -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(f"{ICONS['folder']} Browse Lectures", callback_data="browse_folders")],
-        [InlineKeyboardButton(f"{ICONS['search']} Search Files", callback_data="search_start")]
+        [InlineKeyboardButton(f"{ICONS['folder']} {STRINGS['btn_browse']}", callback_data="browse_folders")],
+        [InlineKeyboardButton(f"{ICONS['search']} {STRINGS['btn_search']}", callback_data="search_start")]
     ]
     if is_admin:
-        keyboard.append([InlineKeyboardButton(f"{ICONS['admin']} Admin Dashboard", callback_data="admin_main")])
+        keyboard.append([InlineKeyboardButton(f"{ICONS['admin']} {STRINGS['btn_admin']}", callback_data="admin_main")])
     
-    keyboard.append([InlineKeyboardButton("❌ Close Menu", callback_data="close_interface")])
+    keyboard.append([InlineKeyboardButton(f"{ICONS['close']} {STRINGS['btn_close']}", callback_data="close_interface")])
     return InlineKeyboardMarkup(keyboard)
 
 def build_folder_buttons(folder_data: dict, is_admin=False):
     """Build folder navigation buttons"""
     buttons = []
     
-    # Add subfolder buttons (2 per row for better look)
+    # Add subfolder buttons (2 per row)
     subfolders = sorted(folder_data.get("subfolders", {}))
     folder_rows = []
     for i in range(0, len(subfolders), 2):
@@ -116,7 +163,7 @@ def build_folder_buttons(folder_data: dict, is_admin=False):
     
     buttons.extend(folder_rows)
     
-    # Add file buttons (1 per row for readability)
+    # Add file buttons (1 per row)
     for filename in sorted(folder_data.get("files", {})):
         if filename and len(filename.strip()) > 0:
             icon = get_file_icon(filename)
@@ -124,6 +171,6 @@ def build_folder_buttons(folder_data: dict, is_admin=False):
             buttons.append([InlineKeyboardButton(f"{icon} {display_name}", callback_data=f"download|{filename}")])
     
     if is_admin:
-        buttons.append([InlineKeyboardButton(f"{ICONS['admin']} Manage This Folder", callback_data="admin_current")])
+        buttons.append([InlineKeyboardButton(f"{ICONS['admin']} {STRINGS['admin_manage']}", callback_data="admin_current")])
     
     return buttons

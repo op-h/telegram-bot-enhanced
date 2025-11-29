@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from bot.config import ADMIN_USERNAME, PLATFORM
-from bot.utils import main_menu_buttons, safe_edit_message
+from bot.utils import main_menu_buttons, safe_edit_message, get_string
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,23 +19,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_admin = user.username == ADMIN_USERNAME
     
     if not db:
-        msg = "❌ **System Error**: Database connection failed.\nPlease contact the administrator."
+        msg = get_string('error_db')
         if update.callback_query:
             await update.callback_query.message.reply_text(msg, parse_mode='Markdown')
         else:
             await update.message.reply_text(msg, parse_mode='Markdown')
         return
     
-    welcome_text = (
-        f"👋 **Hello, {user.first_name}!**\n\n"
-        f"Welcome to the **Cybersecurity Lectures Bot**.\n"
-        f"Here you can access all lecture materials, recordings, and resources.\n\n"
-        f"📂 **Features:**\n"
-        f"• Browse organized folders\n"
-        f"• Search for specific files\n"
-        f"• Instant downloads\n\n"
-        f"👇 **Select an option below to get started:**"
-    )
+    welcome_text = get_string('welcome_header', name=user.first_name) + "\n\n" + get_string('welcome_body')
     
     if update.callback_query:
         await update.callback_query.answer()
