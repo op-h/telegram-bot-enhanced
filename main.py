@@ -65,7 +65,7 @@ def main():
         # Common Handlers
         app.add_handler(CallbackQueryHandler(user.back, pattern="^back$"))
         app.add_handler(CallbackQueryHandler(user.clear_interface, pattern="^clear_interface$"))
-        app.add_handler(CallbackQueryHandler(common.start, pattern="^close_interface$")) # Just re-start or delete? Close usually deletes.
+        app.add_handler(CallbackQueryHandler(common.close_handler, pattern="^close_interface$"))
         # Actually close_interface logic was: delete message.
         # I need to implement close_interface in user handlers or common.
         # Let's add it to user.clear_interface logic or separate.

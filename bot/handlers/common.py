@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from bot.config import ADMIN_USERNAME, PLATFORM
-from bot.utils import main_menu_buttons
+from bot.utils import main_menu_buttons, safe_edit_message
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_admin = user.username == ADMIN_USERNAME
     
     if not db:
-        await update.message.reply_text("❌ **System Error**: Database connection failed.\nPlease contact the administrator.", parse_mode='Markdown')
+        msg = "❌ **System Error**: Database connection failed.\nPlease contact the administrator."
+        if update.callback_query:
+            await update.callback_query.message.reply_text(msg, parse_mode='Markdown')
+        else:
+            await update.message.reply_text(msg, parse_mode='Markdown')
         return
     
     welcome_text = (
@@ -33,11 +37,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👇 **Select an option below to get started:**"
     )
     
-    await update.message.reply_text(
-        welcome_text,
-        reply_markup=main_menu_buttons(is_admin),
-        parse_mode='Markdown'
-    )
+    if update.callback_query:
+        await update.callback_query.answer()
+        await safe_edit_message(update.callback_query, welcome_text, reply_markup=main_menu_buttons(is_admin))
+    else:
+        await update.message.reply_text(
+            welcome_text,
+            reply_markup=main_menu_buttons(is_admin),
+            parse_mode='Markdown'
+        )
+
+async def close_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    try:
+        await query.message.delete()
+    except:
+        pass
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log errors and notify admin"""
