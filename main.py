@@ -42,11 +42,17 @@ def main():
         
         # Command Handlers
         app.add_handler(CommandHandler("start", common.start))
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, user.handle_search))
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, admin.handle_broadcast))
-        # Note: MessageHandlers overlap. I need to check state inside them or use ConversationHandler.
-        # Since I'm using simple state flags in user_data, I should combine them or use a dispatcher function.
-        # Or better, use a single text handler that delegates based on state.
+        app.add_handler(CallbackQueryHandler(user.download_by_id, pattern="^download_id\|"))
+        
+        # Common Handlers
+        app.add_handler(CallbackQueryHandler(user.back, pattern="^back$"))
+        app.add_handler(CallbackQueryHandler(user.clear_interface, pattern="^clear_interface$"))
+        app.add_handler(CallbackQueryHandler(common.close_handler, pattern="^close_interface$"))
+        
+        # Inline Query Handler (Real-time Search)
+        from telegram.ext import InlineQueryHandler
+        from bot.handlers import inline
+        app.add_handler(InlineQueryHandler(inline.inline_query))
         
         async def text_router(update, context):
             if context.user_data.get("awaiting_folder_name"):
