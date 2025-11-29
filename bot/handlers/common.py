@@ -19,14 +19,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_admin = user.username == ADMIN_USERNAME
     
     if not db:
-        await update.message.reply_text("❌ Database connection failed. Please contact admin.")
+        await update.message.reply_text("❌ **System Error**: Database connection failed.\nPlease contact the administrator.", parse_mode='Markdown')
         return
     
+    welcome_text = (
+        f"👋 **Hello, {user.first_name}!**\n\n"
+        f"Welcome to the **Cybersecurity Lectures Bot**.\n"
+        f"Here you can access all lecture materials, recordings, and resources.\n\n"
+        f"📂 **Features:**\n"
+        f"• Browse organized folders\n"
+        f"• Search for specific files\n"
+        f"• Instant downloads\n\n"
+        f"👇 **Select an option below to get started:**"
+    )
+    
     await update.message.reply_text(
-        f"📁 **Cybersecurity Lectures Bot**\n\n"
-        f"🚀 Enhanced & Refactored\n"
-        f"💾 **From A ---> Z**\n\n"
-        f"🌐 Running on: {PLATFORM}",
+        welcome_text,
         reply_markup=main_menu_buttons(is_admin),
         parse_mode='Markdown'
     )
